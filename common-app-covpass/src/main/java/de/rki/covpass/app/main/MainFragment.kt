@@ -65,13 +65,15 @@ internal class MainFragment :
     UpdateInfoCallback,
     DataProtectionCallback,
     CheckRemarkCallback,
-    NotificationEvents {
+    NotificationEvents,
+    AuthResult {
 
     private val viewModel by reactiveState { MainViewModel(scope) }
     private val covPassBackgroundUpdateViewModel by reactiveState { CovPassBackgroundUpdateViewModel(scope) }
     private val binding by viewBinding(CovpassMainBinding::inflate)
     private var fragmentStateAdapter: CertificateFragmentStateAdapter by validUntil(::onDestroyView)
     override val announcementAccessibilityRes: Int = R.string.accessibility_start_screen_info_announce
+    private var authed = false;
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -84,9 +86,14 @@ internal class MainFragment :
 
     override fun onResume() {
         super.onResume()
+        if(!authed)
+            findNavigator().push(AuthenticationNav())
         covPassBackgroundUpdateViewModel.update()
     }
 
+   override fun recvRes(res : Boolean) {
+        authed = res
+    }
     private fun setupViews() {
         ViewCompat.setAccessibilityDelegate(
             binding.mainEmptyHeaderTextview,
