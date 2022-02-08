@@ -31,6 +31,9 @@ import de.rki.covpass.app.databinding.DetailBinding
 import de.rki.covpass.app.dependencies.covpassDeps
 import de.rki.covpass.app.detail.adapter.DetailAdapter
 import de.rki.covpass.app.detail.adapter.DetailItem
+import de.rki.covpass.app.main.AuthResCallback
+import de.rki.covpass.app.main.AuthResult
+import de.rki.covpass.app.main.AuthenticationNav
 import de.rki.covpass.commonapp.BaseFragment
 import de.rki.covpass.commonapp.dialog.DialogModel
 import de.rki.covpass.commonapp.dialog.showDialog
@@ -67,17 +70,31 @@ internal class DetailFragmentNav(
  * Further actions (Show QR Code, Add cov certificate)
  */
 internal class DetailFragment :
-    BaseFragment(), DgcEntryDetailCallback, DetailClickListener, DetailEvents<DetailBoosterAction> {
+    BaseFragment(), DgcEntryDetailCallback, DetailClickListener, DetailEvents<DetailBoosterAction>, AuthResCallback {
 
     private val args: DetailFragmentNav by lazy { getArgs() }
     private val viewModel by reactiveState { DetailViewModel<DetailBoosterAction>(scope) }
     private val binding by viewBinding(DetailBinding::inflate)
     private var isFavorite = false
+    private var authst = AuthResult.FAILURE
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setupActionBar()
         autoRun { updateViews(get(covpassDeps.certRepository.certs)) }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        when (authst) {
+            AuthResult.FAILURE -> findNavigator().push(AuthenticationNav())
+            AuthResult.ABORT -> findNavigator().pop()
+            AuthResult.SUCESS -> {
+            }
+        }.let {}
+    }
+    override fun recvRes(res : AuthResult) {
+        authst = res
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {

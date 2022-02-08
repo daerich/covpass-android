@@ -5,6 +5,7 @@
 
 dependencies {
     api project(":common-app")
+    implementation("androidx.biometric:biometric:1.2.0-alpha04")
 }
 
 apply from: "$rootDir/gradle/common/twine.gradle"
