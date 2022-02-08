@@ -19,22 +19,24 @@
 package de.rki.covpass.app.main
 
 import android.content.Context
-import android.os.Bundle
-import android.view.View
 import android.widget.Toast
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_WEAK
 import androidx.biometric.BiometricPrompt
 import com.ibm.health.common.android.utils.viewBinding
+import com.ibm.health.common.annotations.Abort
+import com.ibm.health.common.annotations.Abortable
+import com.ibm.health.common.annotations.Continue
 import com.ibm.health.common.navigation.android.FragmentNav
 import com.ibm.health.common.navigation.android.findNavigator
 import de.rki.covpass.app.databinding.AuthpageBinding
-import de.rki.covpass.app.databinding.CovpassMainBinding
 import de.rki.covpass.commonapp.BaseFragment
 import kotlinx.parcelize.Parcelize
 
-public interface AuthResult {
-    public fun recvRes(res : Boolean)
+public enum class AuthResult{SUCESS, FAILURE, ABORT}
+
+public interface AuthResCallback {
+    public fun recvRes(res : AuthResult)
 }
 
 internal class BiometricsState(context: Context?) {
@@ -57,7 +59,7 @@ internal class BiometricsState(context: Context?) {
                     Toast.makeText(ctx,
                         "Authentication error: $errString", Toast.LENGTH_SHORT)
                         .show()
-                    frag.findNavigator().popUntil<AuthResult>()?.recvRes(false)
+                    frag.findNavigator().popUntil<AuthResCallback>()?.recvRes(AuthResult.ABORT)
                 }
 
                 override fun onAuthenticationSucceeded(
@@ -66,7 +68,7 @@ internal class BiometricsState(context: Context?) {
                     Toast.makeText(ctx,
                         "Authentication succeeded!", Toast.LENGTH_SHORT)
                         .show()
-                    frag.findNavigator().popUntil<AuthResult>()?.recvRes(true)
+                    frag.findNavigator().popUntil<AuthResCallback>()?.recvRes(AuthResult.SUCESS)
                 }
 
                 override fun onAuthenticationFailed() {
@@ -74,7 +76,7 @@ internal class BiometricsState(context: Context?) {
                     Toast.makeText(ctx, "Authentication failed",
                         Toast.LENGTH_SHORT)
                         .show()
-                    frag.findNavigator().popUntil<AuthResult>()?.recvRes(false)
+                    frag.findNavigator().popUntil<AuthResCallback>()?.recvRes(AuthResult.FAILURE)
                 }
             })
         biometricPrompt.authenticate(promptInfo);
