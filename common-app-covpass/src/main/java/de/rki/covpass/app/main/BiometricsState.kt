@@ -82,6 +82,8 @@ internal class AuthenticationFragment : BaseFragment() {
         val biostat = BiometricsState(context)
         if (biostat.checkState()) {
             biostat.showBiometrics(context, this)
+        } else {
+            findNavigator().popUntil<AuthResCallback>()?.recvRes(AuthResult.SUCCESS)
         }
     }
 }
