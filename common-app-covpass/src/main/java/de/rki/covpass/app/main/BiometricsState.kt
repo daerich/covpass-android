@@ -24,16 +24,13 @@ import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_WEAK
 import androidx.biometric.BiometricPrompt
 import com.ibm.health.common.android.utils.viewBinding
-import com.ibm.health.common.annotations.Abort
-import com.ibm.health.common.annotations.Abortable
-import com.ibm.health.common.annotations.Continue
 import com.ibm.health.common.navigation.android.FragmentNav
 import com.ibm.health.common.navigation.android.findNavigator
 import de.rki.covpass.app.databinding.AuthpageBinding
 import de.rki.covpass.commonapp.BaseFragment
 import kotlinx.parcelize.Parcelize
 
-public enum class AuthResult{SUCESS, FAILURE, ABORT}
+public enum class AuthResult{SUCCESS, FAILURE, ABORT}
 
 public interface AuthResCallback {
     public fun recvRes(res : AuthResult)
@@ -68,15 +65,7 @@ internal class BiometricsState(context: Context?) {
                     Toast.makeText(ctx,
                         "Authentication succeeded!", Toast.LENGTH_SHORT)
                         .show()
-                    frag.findNavigator().popUntil<AuthResCallback>()?.recvRes(AuthResult.SUCESS)
-                }
-
-                override fun onAuthenticationFailed() {
-                    super.onAuthenticationFailed()
-                    Toast.makeText(ctx, "Authentication failed",
-                        Toast.LENGTH_SHORT)
-                        .show()
-                    frag.findNavigator().popUntil<AuthResCallback>()?.recvRes(AuthResult.FAILURE)
+                    frag.findNavigator().popUntil<AuthResCallback>()?.recvRes(AuthResult.SUCCESS)
                 }
             })
         biometricPrompt.authenticate(promptInfo);
