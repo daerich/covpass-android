@@ -89,8 +89,7 @@ internal class DetailFragment :
         when (authst) {
             AuthResult.FAILURE -> findNavigator().push(AuthenticationNav())
             AuthResult.ABORT -> findNavigator().pop()
-            AuthResult.SUCESS -> {
-            }
+            AuthResult.SUCCESS -> {}
         }.let {}
     }
     override fun recvRes(res : AuthResult) {

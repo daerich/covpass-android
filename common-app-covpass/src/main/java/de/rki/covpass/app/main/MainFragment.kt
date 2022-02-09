@@ -65,13 +65,16 @@ internal class MainFragment :
     UpdateInfoCallback,
     DataProtectionCallback,
     CheckRemarkCallback,
-    NotificationEvents {
+    NotificationEvents,
+    AuthResCallback {
 
     private val viewModel by reactiveState { MainViewModel(scope) }
     private val covPassBackgroundUpdateViewModel by reactiveState { CovPassBackgroundUpdateViewModel(scope) }
     private val binding by viewBinding(CovpassMainBinding::inflate)
     private var fragmentStateAdapter: CertificateFragmentStateAdapter by validUntil(::onDestroyView)
     override val announcementAccessibilityRes: Int = R.string.accessibility_start_screen_info_announce
+    private var authst = AuthResult.FAILURE
+    private var restValid = false;
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -85,6 +88,25 @@ internal class MainFragment :
     override fun onResume() {
         super.onResume()
         covPassBackgroundUpdateViewModel.update()
+        if (restValid)
+            authTravel()
+    }
+
+    override fun recvRes(res : AuthResult) {
+        authst = res
+    }
+
+    private fun authTravel() {
+        if (!restValid) {
+            restValid = true;
+            findNavigator().push(AuthenticationNav())
+        }
+        when (authst) {
+            AuthResult.FAILURE -> {restValid = true; findNavigator().push(AuthenticationNav())}
+            AuthResult.ABORT -> {authst = AuthResult.FAILURE; restValid = false; return}
+            AuthResult.SUCCESS -> {authst = AuthResult.FAILURE; restValid = false;
+                showValidityCheck(covpassDeps.certRepository.certs.value)}
+        }.let {}
     }
 
     private fun setupViews() {
@@ -99,7 +121,7 @@ internal class MainFragment :
         )
         binding.mainAddButton.setOnClickListener { showAddCovCertificatePopup() }
         binding.mainValidityCheckLayout.setOnClickListener {
-            showValidityCheck(covpassDeps.certRepository.certs.value)
+            authTravel()
         }
         binding.mainSettingsImagebutton.setOnClickListener {
             findNavigator().push(CovPassInformationFragmentNav())
